@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InkSpiration</title>
+</head>
+<body>
+    <h1>InkSpiration - Your Writing Assistant</h1>
+    <textarea id="user_input" rows="4" cols="50"></textarea>
+    <button onclick="generateResponse()">Generate</button>
+    <p id="response"></p>
+
+    <script>
+        async function generateResponse() {
+            const userInput = document.getElementById('user_input').value;
+            const response = await fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: userInput }),
+            });
+            const data = await response.json();
+            document.getElementById('response').innerText = data;
+        }
+    </script>
+</body>
+</html>
