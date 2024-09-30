@@ -2,28 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InkSpiration</title>
+    <title>Inkspritation - AI Writer's Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+New:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>InkSpiration - Your Writing Assistant</h1>
-    <textarea id="user_input" rows="4" cols="50"></textarea>
-    <button onclick="generateResponse()">Generate</button>
-    <p id="response"></p>
+    <div class="container">
+        <h1><i class="fas fa-pen-nib"></i> Inkspritation</h1>
+
+        <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+
+        <form id="prompt-form">
+            <label for="model_choice"><i class="fas fa-robot"></i> Choose model:</label>
+            <select id="model_choice" name="model_choice">
+                <option value="local">PHI 3 Mini (Local)</option>
+                <option value="chatgpt">ChatGPT (API)</option>
+            </select><br>
+
+            <label for="prompt"><i class="fas fa-pencil-alt"></i> Enter your writing prompt:</label><br>
+            <textarea id="prompt" name="prompt" placeholder="Type your prompt here..."></textarea><br>
+            <button type="submit"><i class="fas fa-magic"></i> Generate</button>
+        </form>
+
+        <h2><i class="fas fa-file-alt"></i> Generated Content:</h2>
+        <div id="response"></div>
+
+        <div class="footer">
+            <p>Powered by Inkspritation <i class="fas fa-feather-alt"></i></p>
+        </div>
+    </div>
 
     <script>
-        async function generateResponse() {
-            const userInput = document.getElementById('user_input').value;
+        document.getElementById('prompt-form').onsubmit = async function(e) {
+            e.preventDefault();
+            const prompt = document.getElementById('prompt').value;
+            const modelChoice = document.getElementById('model_choice').value;
+            const responseDiv = document.getElementById('response');
+            responseDiv.innerHTML = ''; // Clear previous response
+
             const response = await fetch('/generate', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: JSON.stringify({ text: userInput }),
+                body: `prompt=${encodeURIComponent(prompt)}&model_choice=${encodeURIComponent(modelChoice)}`,
             });
             const data = await response.json();
-            document.getElementById('response').innerText = data;
-        }
+
+            if (response.ok) {
+                // Typing effect
+                let index = 0;
+                const text = data.response;
+                function typeWriter() {
+                    if (index < text.length) {
+                        responseDiv.innerHTML += text.charAt(index);
+                        index++;
+                        setTimeout(typeWriter, 30); // Adjust typing speed here
+                    }
+                }
+                typeWriter();
+            } else {
+                responseDiv.innerText = data.error || 'An error occurred.';
+            }
+        };
+        document.getElementById('logout-btn').onclick = async function() {
+            const response = await fetch('/logout', {
+                method: 'GET'
+            });
+            if (response.redirected) {
+                window.location.href = response.url; // Redirect to the login page
+            }
+        };
     </script>
 </body>
 </html>

@@ -1,12 +1,5 @@
 from flask import Flask
 
+app = Flask(__name__)
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object('config.Config')
-
-    with app.app_context():
-        # Import routes
-        from . import routes
-
-        return app
+from app import routes
